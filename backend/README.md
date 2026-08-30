@@ -39,3 +39,21 @@ Day 1 - Project setup completed.
 - [ ] Search filters
 - [ ] Security
 - [ ] Deployment
+
+
+
+## Current Status
+
+Day 2 - FastAPI backend created and tested successfully.
+
+## Backend API
+
+The backend currently provides:
+
+- `GET /` - API welcome endpoint
+- `GET /health` - Health check endpoint
+- `GET /search?query=<query>` - Temporary sample search endpoint
+
+Interactive API documentation is available at:
+
+`/docs`
