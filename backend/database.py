@@ -122,3 +122,27 @@ def get_document_count():
     connection.close()
 
     return count
+
+
+def get_all_documents():
+    """
+    Return all documents from the database.
+    """
+
+    connection = get_connection()
+
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        SELECT id, title, url, description, content
+        FROM documents
+        ORDER BY id
+        """
+    )
+
+    rows = cursor.fetchall()
+
+    connection.close()
+
+    return [dict(row) for row in rows]

@@ -1,21 +1,46 @@
 from fastapi import FastAPI, Query
+
 from backend.database import (
     initialize_database,
     add_document,
     search_documents,
-    get_document_count
+    get_document_count,
+    get_all_documents
 )
+
+from search.engine import SearchEngine
 
 
 app = FastAPI(
     title="MySearchEngine API",
     description="Backend API for MySearchEngine",
-    version="0.2.0"
+    version="0.3.0"
 )
 
 
-# Initialize database when the application starts
 initialize_database()
+
+search_engine = SearchEngine()
+
+
+def load_search_index():
+    """
+    Load all database documents into the search index.
+    """
+
+    documents = get_all_documents()
+
+    for document in documents:
+        search_engine.add_document(
+            document["id"],
+            document["title"],
+            document["url"],
+            document["description"] or "",
+            document["content"] or ""
+        )
+
+
+load_search_index()
 
 
 @app.get("/")
@@ -56,6 +81,14 @@ def create_document(
         content=content
     )
 
+    search_engine.add_document(
+        document_id,
+        title,
+        url,
+        description,
+        content
+    )
+
     return {
         "message": "Document added successfully",
         "document_id": document_id
@@ -70,19 +103,10 @@ def search(
         description="Search query"
     )
 ):
-    results = search_documents(query)
-
-    cleaned_results = []
-
-    for result in results:
-        cleaned_results.append({
-            "title": result["title"],
-            "url": result["url"],
-            "description": result["description"]
-        })
+    results = search_engine.search(query)
 
     return {
         "query": query,
-        "results_count": len(cleaned_results),
-        "results": cleaned_results
+        "results_count": len(results),
+        "results": results
     }

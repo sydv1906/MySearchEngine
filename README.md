@@ -78,3 +78,33 @@ The backend currently provides:
 MySearchEngine currently uses SQLite for local document storage.
 
 The database is generated automatically in the local `data/` directory.
+
+## Current Status
+
+Day 4 - Search engine core implemented.
+
+## Search Engine
+
+MySearchEngine now includes:
+
+- Text tokenization
+- Lowercase normalization
+- Stop-word removal
+- Inverted index
+- Term frequency calculation
+- Inverse document frequency calculation
+- TF-IDF-style relevance scoring
+- Ranked search results
+- Automatic index rebuilding from SQLite
+
+
+## Search Architecture
+
+The current search pipeline is:
+
+User Query
+→ Tokenization
+→ Inverted Index
+→ TF-IDF Scoring
+→ Ranking
+→ Search Results
