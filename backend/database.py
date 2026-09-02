@@ -52,26 +52,46 @@ def initialize_database():
     connection.close()
 
 
-def add_document(title, url, description="", content=""):
-    """
-    Add a document to the database.
-    """
+def add_document(
+    title: str,
+    url: str,
+    description: str = "",
+    content: str = ""
+):
+
     connection = get_connection()
 
     cursor = connection.cursor()
 
     cursor.execute(
+        "SELECT id FROM documents WHERE url = ?",
+        (url,)
+    )
+
+    existing = cursor.fetchone()
+
+    if existing:
+        connection.close()
+
+        return existing["id"]
+
+    cursor.execute(
         """
-        INSERT OR IGNORE INTO documents
+        INSERT INTO documents
         (title, url, description, content)
         VALUES (?, ?, ?, ?)
         """,
-        (title, url, description, content)
+        (
+            title,
+            url,
+            description,
+            content
+        )
     )
 
-    connection.commit()
-
     document_id = cursor.lastrowid
+
+    connection.commit()
 
     connection.close()
 

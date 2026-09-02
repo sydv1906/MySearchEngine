@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
+from crawler.crawler import WebCrawler
 
 from backend.database import (
     initialize_database,
@@ -121,4 +122,45 @@ def search(
         "query": query,
         "results_count": len(results),
         "results": results
+    }
+
+@app.post("/crawl")
+def crawl_website(
+    url: str,
+    max_pages: int = 5
+):
+
+    crawler = WebCrawler(
+        max_pages=max_pages,
+        same_domain=True,
+        delay=1.0
+    )
+
+    pages = crawler.crawl(url)
+
+    indexed = 0
+
+    for page in pages:
+
+        document_id = add_document(
+            title=page["title"] or page["url"],
+            url=page["url"],
+            description=page["content"][:300],
+            content=page["content"]
+        )
+
+        search_engine.add_document(
+            document_id,
+            page["title"] or page["url"],
+            page["url"],
+            page["content"][:300],
+            page["content"]
+        )
+
+        indexed += 1
+
+    return {
+        "message": "Crawl completed",
+        "pages_crawled": len(pages),
+        "pages_indexed": indexed
     }

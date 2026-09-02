@@ -128,3 +128,31 @@ Run the backend:
 
 ```bash
 uvicorn backend.main:app --reload
+
+## Web Crawler
+
+MySearchEngine now includes a basic web crawler.
+
+The crawler can:
+
+- Accept a starting URL
+- Download HTML pages
+- Parse HTML
+- Extract page titles
+- Extract page text
+- Extract links
+- Convert relative links to absolute URLs
+- Avoid duplicate URLs
+- Restrict crawling to the same domain
+- Respect robots.txt
+- Apply a crawl delay
+- Limit the number of pages crawled
+- Store crawled pages in SQLite
+- Add crawled pages to the search index
+
+## Crawl API
+
+Start the FastAPI server:
+
+```bash
+uvicorn backend.main:app --reload
