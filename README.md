@@ -108,3 +108,23 @@ User Query
 → TF-IDF Scoring
 → Ranking
 → Search Results
+
+## Current Status
+
+Day 5- MySearchEngine Frontend
+
+React + Vite frontend for MySearchEngine.
+
+## Run locally
+
+From the frontend directory:
+
+```bash
+npm install
+npm run dev
+
+
+Run the backend:
+
+```bash
+uvicorn backend.main:app --reload

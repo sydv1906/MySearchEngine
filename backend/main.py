@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend.database import (
     initialize_database,
     add_document,
-    search_documents,
     get_document_count,
     get_all_documents
 )
@@ -15,6 +15,18 @@ app = FastAPI(
     title="MySearchEngine API",
     description="Backend API for MySearchEngine",
     version="0.3.0"
+)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
