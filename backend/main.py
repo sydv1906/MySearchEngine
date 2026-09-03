@@ -6,7 +6,8 @@ from backend.database import (
     initialize_database,
     add_document,
     get_document_count,
-    get_all_documents
+    get_all_documents,
+    get_crawl_stats
 )
 
 from search.engine import SearchEngine
@@ -164,3 +165,8 @@ def crawl_website(
         "pages_crawled": len(pages),
         "pages_indexed": indexed
     }
+
+
+@app.get("/crawl/stats")
+def crawl_stats():
+    return get_crawl_stats()
