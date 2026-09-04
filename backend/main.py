@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from crawler.crawler import WebCrawler
@@ -12,27 +14,6 @@ from backend.database import (
 
 from search.engine import SearchEngine
 
-
-app = FastAPI(
-    title="MySearchEngine API",
-    description="Backend API for MySearchEngine",
-    version="0.3.0"
-)
-
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173"
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-initialize_database()
 
 search_engine = SearchEngine()
 
@@ -54,7 +35,33 @@ def load_search_index():
         )
 
 
-load_search_index()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    load_search_index()
+    yield
+
+
+app = FastAPI(
+    title="MySearchEngine API",
+    description="Backend API for MySearchEngine",
+    version="0.3.0",
+    lifespan=lifespan
+)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+initialize_database()
 
 
 @app.get("/")

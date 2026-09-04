@@ -3,6 +3,41 @@ import math
 from search.tokenizer import tokenize
 
 
+def tf(term_frequency: int, document_length: int) -> float:
+    """Calculate normalized term frequency."""
+
+    if document_length == 0:
+        return 0.0
+
+    return term_frequency / document_length
+
+
+def idf(document_count: int, document_frequency: int) -> float:
+    """Calculate smoothed inverse document frequency."""
+
+    if document_frequency == 0:
+        return 0.0
+
+    return math.log(
+        (document_count + 1)
+        / (document_frequency + 1)
+    ) + 1
+
+
+def tf_idf(
+    term_frequency: int,
+    document_length: int,
+    document_count: int,
+    document_frequency: int
+) -> float:
+    """Calculate a normalized TF-IDF score."""
+
+    return tf(term_frequency, document_length) * idf(
+        document_count,
+        document_frequency
+    )
+
+
 def calculate_tf(term: str, document_text: str) -> float:
     """
     Calculate term frequency.
@@ -26,13 +61,7 @@ def calculate_idf(
     Calculate inverse document frequency.
     """
 
-    if document_frequency == 0:
-        return 0.0
-
-    return math.log(
-        (total_documents + 1)
-        / (document_frequency + 1)
-    ) + 1
+    return idf(total_documents, document_frequency)
 
 
 def calculate_tfidf(

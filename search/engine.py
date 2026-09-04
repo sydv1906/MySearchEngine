@@ -1,6 +1,5 @@
-import math
-
 from search.index import InvertedIndex
+from search.ranking import tf_idf
 from search.tokenizer import tokenize
 
 
@@ -56,37 +55,29 @@ class SearchEngine:
 
         scores = {}
 
-        total_documents = len(self.documents)
+        total_documents = self.index.get_document_count()
 
         for term in query_tokens:
 
-            matching_documents = (
-                self.index.get_documents(term)
-            )
-
-            document_frequency = (
-                self.index.get_document_frequency(term)
-            )
+            matching_documents = self.index.search_term(term)
+            document_frequency = self.index.document_frequency(term)
 
             if document_frequency == 0:
                 continue
 
-            idf = math.log(
-                (total_documents + 1)
-                / (document_frequency + 1)
-            ) + 1
-
             for document_id, term_frequency in (
                 matching_documents.items()
             ):
-
-                document_length = (
-                    self.index.documents[document_id]["length"]
+                document_length = self.index.get_document_length(
+                    document_id
                 )
 
-                tf = term_frequency / document_length
-
-                score = tf * idf
+                score = tf_idf(
+                    term_frequency,
+                    document_length,
+                    total_documents,
+                    document_frequency
+                )
 
                 scores[document_id] = (
                     scores.get(document_id, 0.0)
