@@ -135,11 +135,13 @@ def search(
 @app.post("/crawl")
 def crawl_website(
     url: str,
-    max_pages: int = 5
+    max_pages: int = 5,
+    max_urls: int = 100
 ):
 
     crawler = WebCrawler(
         max_pages=max_pages,
+        max_urls=max_urls,
         same_domain=True,
         delay=1.0
     )

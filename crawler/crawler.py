@@ -4,7 +4,11 @@ from urllib.robotparser import RobotFileParser
 
 from crawler.fetcher import fetch_page
 from crawler.parser import parse_page
-from crawler.url_utils import normalize_url
+from crawler.url_utils import (
+    is_same_domain,
+    is_valid_url,
+    normalize_url
+)
 import time
 
 from backend.database import (
@@ -13,7 +17,8 @@ from backend.database import (
     get_pending_url,
     mark_url_crawling,
     mark_url_crawled,
-    mark_url_failed
+    mark_url_failed,
+    is_url_crawled
 )
 
 class WebCrawler:
@@ -21,10 +26,12 @@ class WebCrawler:
     def __init__(
         self,
         max_pages: int = 10,
+        max_urls: int = 1000,
         same_domain: bool = True,
         delay: float = 0.0
     ):
         self.max_pages = max_pages
+        self.max_urls = max_urls
         self.same_domain = same_domain
         self.delay = delay
         self.visited = set()
@@ -56,11 +63,12 @@ class WebCrawler:
         if not self.same_domain:
             return True
 
-        parsed = urlparse(url)
-
-        return parsed.netloc == base_domain
+        return is_same_domain(url, base_domain)
 
     def crawl(self, start_url: str):
+
+        if not is_valid_url(start_url):
+            return []
 
         self.setup_robots(start_url)
 
@@ -69,8 +77,10 @@ class WebCrawler:
         initialize_database()
         add_crawl_url(start_url)
 
-        start_domain = urlparse(start_url).netloc
+        start_domain = start_url
         results = []
+        self.visited = set()
+        discovered_urls = {start_url}
 
         while len(results) < self.max_pages:
             queue_item = get_pending_url()
@@ -80,7 +90,7 @@ class WebCrawler:
 
             current_url = queue_item["url"]
 
-            if current_url in self.visited:
+            if current_url in self.visited or is_url_crawled(current_url):
                 mark_url_crawled(current_url)
                 continue
 
@@ -121,17 +131,21 @@ class WebCrawler:
             mark_url_crawled(current_url)
 
             for link in page["links"]:
-                                link = normalize_url(link)
+                if len(discovered_urls) >= self.max_urls:
+                    break
 
-                                if link in self.visited:
-                                        continue
+                if not is_valid_url(link):
+                    continue
 
-                                if not self.is_allowed_domain(
-                                        link,
-                                        start_domain
-                                ):
-                                        continue
+                link = normalize_url(link)
 
-                                add_crawl_url(link)
+                if link in discovered_urls or is_url_crawled(link):
+                    continue
+
+                if not self.is_allowed_domain(link, start_domain):
+                    continue
+
+                add_crawl_url(link)
+                discovered_urls.add(link)
 
         return results

@@ -89,13 +89,21 @@ def add_crawl_url(url: str):
 
     cursor.execute(
         """
-            INSERT INTO crawl_queue
-        (url, status)
+        INSERT INTO crawl_queue (url, status)
         VALUES (?, 'pending')
-            ON CONFLICT(url) DO UPDATE SET
-                status = 'pending',
-                retry_count = 0,
-                crawled_at = NULL
+        ON CONFLICT(url) DO UPDATE SET
+            status = CASE
+                WHEN crawl_queue.status = 'failed' THEN 'pending'
+                ELSE crawl_queue.status
+            END,
+            retry_count = CASE
+                WHEN crawl_queue.status = 'failed' THEN 0
+                ELSE crawl_queue.retry_count
+            END,
+            crawled_at = CASE
+                WHEN crawl_queue.status = 'failed' THEN NULL
+                ELSE crawl_queue.crawled_at
+            END
         """,
         (url,)
     )
@@ -172,6 +180,28 @@ def mark_url_failed(url: str):
 
     connection.commit()
     connection.close()
+
+
+def is_url_crawled(url: str) -> bool:
+    """Return whether a URL has already completed crawling."""
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        """
+        SELECT 1
+        FROM crawl_queue
+        WHERE url = ? AND status = 'crawled'
+        LIMIT 1
+        """,
+        (url,)
+    )
+
+    result = cursor.fetchone() is not None
+    connection.close()
+
+    return result
 
 
 def retry_failed_urls(max_retries: int = 3):
