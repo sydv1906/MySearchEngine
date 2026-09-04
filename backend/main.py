@@ -122,13 +122,24 @@ def search(
         ...,
         min_length=1,
         description="Search query"
-    )
+    ),
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=50)
 ):
-    results = search_engine.search(query)
+    search_results = search_engine.search_paginated(
+        query,
+        page=page,
+        limit=limit
+    )
+    results = search_results["results"]
 
     return {
         "query": query,
         "results_count": len(results),
+        "total_results": search_results["total_results"],
+        "page": search_results["page"],
+        "limit": search_results["limit"],
+        "total_pages": search_results["total_pages"],
         "results": results
     }
 

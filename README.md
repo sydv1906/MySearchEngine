@@ -1,158 +1,144 @@
-# MySearchEngine# MySearchEngine
+# MySearchEngine
 
-A privacy-focused search engine built from scratch.
-
-## Project Goal
-
-MySearchEngine is an independent search engine designed to:
-
-- Crawl publicly accessible web pages
-- Extract and process webpage content
-- Build a searchable index
-- Rank search results
-- Provide a clean search interface
-- Avoid dependence on commercial search APIs
+A privacy-focused search engine built from scratch. It crawls publicly accessible
+HTML pages, stores documents in SQLite, builds an inverted index, ranks results
+with BM25, and serves them through FastAPI and a React frontend.
 
 ## Technology Stack
 
-- Python
-- FastAPI
-- React / Next.js
-- SQLite / PostgreSQL
-- BeautifulSoup
-- Git & GitHub
+- Python, FastAPI, SQLite
+- BeautifulSoup and Requests
+- React, TypeScript, and Vite
+- Pytest
 
-## Current Status
+## Current Progress
 
-Day 1 - Project setup completed.
+The guided implementation is complete through **Day 12**.
 
-## Development Roadmap
+### Day 1 - Project Setup
 
-- [ ] Backend API
-- [ ] Database
-- [ ] Search functionality
-- [ ] Frontend
-- [ ] Web crawler
-- [ ] Indexing system
-- [ ] Ranking algorithm
-- [ ] Search suggestions
-- [ ] Search filters
-- [ ] Security
-- [ ] Deployment
+- Created the project structure and development configuration.
 
+### Day 2 - FastAPI Backend
 
+- Added the FastAPI application, health endpoint, and API documentation.
 
-## Current Status
+### Day 3 - SQLite Storage
 
-Day 2 - FastAPI backend created and tested successfully.
+- Added persistent document storage and database statistics.
+- Added document creation and basic document search APIs.
 
-## Backend API
+### Day 4 - Search Engine Core
 
-The backend currently provides:
+- Added tokenization, lowercase normalization, and stop-word removal.
+- Added an inverted index with term and document statistics.
+- Added ranked search and automatic index loading from SQLite.
 
-- `GET /` - API welcome endpoint
-- `GET /health` - Health check endpoint
-- `GET /search?query=<query>` - Temporary sample search endpoint
+### Day 5 - React Frontend
 
-Interactive API documentation is available at:
+- Added the React/Vite search interface and backend integration.
 
-`/docs`
+### Day 6 - Crawler Foundation
 
+- Added HTML fetching, parsing, title/text extraction, and link discovery.
 
-## Current Status
+### Day 7 - Crawl Queue
 
-Day 3 - SQLite database and persistent document search implemented.
+- Added SQLite-backed crawl queue statuses, retry handling, robots.txt support,
+	crawl delay, and indexing of crawled pages.
 
-## Backend API
+### Day 8 - Indexing Pipeline
 
-The backend currently provides:
+- Improved token-aware inverted-index statistics.
+- Centralized TF-IDF calculations while preserving compatibility APIs.
 
-- `GET /` - API welcome endpoint
-- `GET /health` - Health check endpoint
-- `GET /stats` - Database statistics
-- `POST /documents` - Add a searchable document
-- `GET /search?query=<query>` - Search indexed documents
+### Day 9 - Smart URL Frontier
 
-## Database
+- Added URL normalization, HTTP/HTTPS validation, hostname-based same-domain
+	checks, duplicate prevention, crawl status checks, `max_pages`, and `max_urls`.
 
-MySearchEngine currently uses SQLite for local document storage.
+### Day 10 - BM25 Ranking
 
-The database is generated automatically in the local `data/` directory.
+- Replaced TF-IDF as the primary scorer with BM25.
+- Added average document length, title weighting, and description weighting.
 
-## Current Status
+### Day 11 - Result Quality
 
-Day 4 - Search engine core implemented.
+- Added content-based snippets and matched query terms.
+- Added safe case-insensitive highlighting while preserving capitalization.
+- Updated React result cards without using `dangerouslySetInnerHTML`.
 
-## Search Engine
+### Day 12 - Pagination and Search UX
 
-MySearchEngine now includes:
+- Added paginated engine and API search results.
+- Added total result and total page metadata.
+- Added FastAPI validation for `page` and `limit`.
+- Added React Previous/Next controls and result totals.
 
-- Text tokenization
-- Lowercase normalization
-- Stop-word removal
-- Inverted index
-- Term frequency calculation
-- Inverse document frequency calculation
-- TF-IDF-style relevance scoring
-- Ranked search results
-- Automatic index rebuilding from SQLite
+## Search API
 
+Start the backend from the project root:
 
-## Search Architecture
+```bash
+uvicorn backend.main:app --reload
+```
 
-The current search pipeline is:
+Search with optional pagination:
 
-User Query
-→ Tokenization
-→ Inverted Index
-→ TF-IDF Scoring
-→ Ranking
-→ Search Results
+```text
+GET /search?query=python&page=1&limit=10
+```
 
-## Current Status
+`page` must be at least `1`. `limit` must be between `1` and `50`.
+Existing requests such as `/search?query=python` continue to use page `1` and
+limit `10`.
 
-Day 5- MySearchEngine Frontend
+The response includes:
 
-React + Vite frontend for MySearchEngine.
+```json
+{
+	"query": "python",
+	"results_count": 10,
+	"total_results": 37,
+	"page": 1,
+	"limit": 10,
+	"total_pages": 4,
+	"results": []
+}
+```
 
-## Run locally
+Other endpoints include `GET /`, `GET /health`, `GET /stats`, `POST /documents`,
+`POST /crawl`, and `GET /crawl/stats`. Interactive documentation is available
+at `/docs` while the backend is running.
 
-From the frontend directory:
+## Run the Frontend
+
+From the `frontend` directory:
 
 ```bash
 npm install
 npm run dev
+```
 
+## Run Tests
 
-Run the backend:
-
-```bash
-uvicorn backend.main:app --reload
-
-## Web Crawler
-
-MySearchEngine now includes a basic web crawler.
-
-The crawler can:
-
-- Accept a starting URL
-- Download HTML pages
-- Parse HTML
-- Extract page titles
-- Extract page text
-- Extract links
-- Convert relative links to absolute URLs
-- Avoid duplicate URLs
-- Restrict crawling to the same domain
-- Respect robots.txt
-- Apply a crawl delay
-- Limit the number of pages crawled
-- Store crawled pages in SQLite
-- Add crawled pages to the search index
-
-## Crawl API
-
-Start the FastAPI server:
+From the project root:
 
 ```bash
-uvicorn backend.main:app --reload
+venv\Scripts\python.exe -m pytest
+```
+
+Build the frontend:
+
+```bash
+cd frontend
+npm run build
+```
+
+## Current Architecture
+
+```text
+Crawler -> SQLite document store -> Tokenizer -> Inverted index
+				-> BM25 ranking -> Snippets/highlighting -> Paginated FastAPI API
+				-> React search interface
+```

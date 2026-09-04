@@ -1,3 +1,5 @@
+import math
+
 from search.index import InvertedIndex
 from search.ranking import bm25
 from search.snippets import generate_snippet
@@ -47,15 +49,41 @@ class SearchEngine:
             combined_text
         )
 
-    def search(self, query: str, limit: int = 10):
+    def search(
+        self,
+        query: str,
+        limit: int = 10,
+        page: int = 1
+    ):
         """
-        Search indexed documents and rank them.
+        Search indexed documents and return one result page.
         """
+
+        return self.search_paginated(query, page, limit)["results"]
+
+    def search_paginated(
+        self,
+        query: str,
+        page: int = 1,
+        limit: int = 10
+    ):
+        """Search indexed documents and return results with pagination metadata."""
+
+        if page < 1:
+            raise ValueError("page must be at least 1")
+        if limit < 1:
+            raise ValueError("limit must be at least 1")
 
         query_tokens = tokenize(query)
 
         if not query_tokens:
-            return []
+            return {
+                "results": [],
+                "total_results": 0,
+                "page": page,
+                "limit": limit,
+                "total_pages": 0
+            }
 
         scores = {}
 
@@ -106,7 +134,13 @@ class SearchEngine:
 
         results = []
 
-        for document_id, score in ranked_results[:limit]:
+        total_results = len(ranked_results)
+        total_pages = math.ceil(total_results / limit)
+        start = (page - 1) * limit
+        end = start + limit
+        results = []
+
+        for document_id, score in ranked_results[start:end]:
 
             document = self.documents[document_id]
             document_tokens = tokenize(" ".join([
@@ -131,4 +165,10 @@ class SearchEngine:
                 "matched_terms": matched_terms
             })
 
-        return results
+        return {
+            "results": results,
+            "total_results": total_results,
+            "page": page,
+            "limit": limit,
+            "total_pages": total_pages
+        }

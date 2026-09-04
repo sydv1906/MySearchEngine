@@ -41,9 +41,13 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
+  const pageLimit = 10;
 
 
-  const search = async () => {
+  const search = async (requestedPage = 1) => {
     const trimmedQuery = query.trim();
 
     if (!trimmedQuery) {
@@ -53,10 +57,16 @@ function App() {
     setLoading(true);
     setSearched(true);
     setError("");
+    setPage(requestedPage);
 
     try {
+      const params = new URLSearchParams({
+        query: trimmedQuery,
+        page: String(requestedPage),
+        limit: String(pageLimit)
+      });
       const response = await fetch(
-        `http://127.0.0.1:8000/search?query=${encodeURIComponent(trimmedQuery)}`
+        `http://127.0.0.1:8000/search?${params.toString()}`
       );
 
       if (!response.ok) {
@@ -66,10 +76,14 @@ function App() {
       const data = await response.json();
 
       setResults(data.results || []);
+  setTotalPages(data.total_pages || 1);
+  setTotalResults(data.total_results || 0);
     } catch (err) {
       console.error(err);
       setError("Unable to connect to the search server.");
       setResults([]);
+      setTotalPages(1);
+      setTotalResults(0);
     } finally {
       setLoading(false);
     }
@@ -80,6 +94,11 @@ function App() {
     if (event.key === "Enter") {
       search();
     }
+  };
+
+
+  const goToPage = (nextPage: number) => {
+    search(nextPage);
   };
 
 
@@ -106,7 +125,7 @@ function App() {
           />
 
           <button
-            onClick={search}
+            onClick={() => search(1)}
             className="search-button"
             disabled={loading}
           >
@@ -144,8 +163,7 @@ function App() {
           <div className="results">
 
             <p className="results-count">
-              Found {results.length} result
-              {results.length !== 1 ? "s" : ""}
+              {totalResults} result{totalResults !== 1 ? "s" : ""} found
             </p>
 
 
@@ -193,6 +211,26 @@ function App() {
               </article>
 
             ))}
+
+            {totalPages > 1 && (
+              <div className="pagination" aria-label="Search results pages">
+                <button
+                  type="button"
+                  onClick={() => goToPage(page - 1)}
+                  disabled={page === 1 || loading}
+                >
+                  Previous
+                </button>
+                <span>Page {page} of {totalPages}</span>
+                <button
+                  type="button"
+                  onClick={() => goToPage(page + 1)}
+                  disabled={page === totalPages || loading}
+                >
+                  Next
+                </button>
+              </div>
+            )}
 
           </div>
         )}

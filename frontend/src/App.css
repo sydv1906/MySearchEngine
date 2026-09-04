@@ -153,6 +153,36 @@ body {
 }
 
 
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin: 36px 0 24px;
+}
+
+
+.pagination button {
+  padding: 9px 16px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #202124;
+  cursor: pointer;
+}
+
+
+.pagination button:hover:not(:disabled) {
+  background: #f3f3f3;
+}
+
+
+.pagination button:disabled {
+  color: #aaaaaa;
+  cursor: not-allowed;
+}
+
+
 .loading {
   margin-top: 40px;
   text-align: center;
