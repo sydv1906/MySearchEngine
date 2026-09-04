@@ -5,8 +5,35 @@ type SearchResult = {
   title: string;
   url: string;
   description: string;
+  snippet: string;
   score: number;
+  matched_terms: string[];
 };
+
+function HighlightedText({
+  text,
+  terms
+}: {
+  text: string;
+  terms: string[];
+}) {
+  if (!terms.length) {
+    return <>{text}</>;
+  }
+
+  const pattern = new RegExp(
+    `(${terms.map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`,
+    "gi"
+  );
+
+  return <>{text.split(pattern).map((part, index) => {
+    const isMatch = terms.some(
+      (term) => part.toLowerCase() === term.toLowerCase()
+    );
+
+    return isMatch ? <strong key={index}>{part}</strong> : part;
+  })}</>;
+}
 
 function App() {
   const [query, setQuery] = useState("");
@@ -135,7 +162,10 @@ function App() {
                   rel="noopener noreferrer"
                   className="result-title"
                 >
-                  {result.title}
+                  <HighlightedText
+                    text={result.title}
+                    terms={result.matched_terms}
+                  />
                 </a>
 
 
@@ -146,6 +176,13 @@ function App() {
 
                 <p className="result-description">
                   {result.description}
+                </p>
+
+                <p className="result-snippet">
+                  <HighlightedText
+                    text={result.snippet}
+                    terms={result.matched_terms}
+                  />
                 </p>
 
 

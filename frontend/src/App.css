@@ -132,6 +132,20 @@ body {
 }
 
 
+.result-snippet {
+  margin: 10px 0 0;
+  line-height: 1.6;
+  color: #202124;
+}
+
+
+.result-snippet strong,
+.result-title strong {
+  font-weight: 700;
+  color: #111111;
+}
+
+
 .result-score {
   margin-top: 8px;
   font-size: 12px;

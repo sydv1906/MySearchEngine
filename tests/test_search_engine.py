@@ -23,6 +23,8 @@ def test_search_engine_ranks_matching_document_first():
 
     assert results
     assert results[0]["url"] == "https://example.com/python"
+    assert "snippet" in results[0]
+    assert "matched_terms" in results[0]
 
 
 def test_search_engine_respects_limit():
@@ -62,6 +64,12 @@ def test_bm25_search_ranking():
 
     assert results
     assert results[0]["url"] == "https://example.com/python"
+
+    multi_term_results = engine.search("python programming")
+    assert set(multi_term_results[0]["matched_terms"]) == {
+        "python",
+        "programming"
+    }
 
 
 def test_title_match_receives_a_ranking_boost():

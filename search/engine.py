@@ -1,5 +1,6 @@
 from search.index import InvertedIndex
 from search.ranking import bm25
+from search.snippets import generate_snippet
 from search.tokenizer import tokenize
 
 
@@ -108,12 +109,26 @@ class SearchEngine:
         for document_id, score in ranked_results[:limit]:
 
             document = self.documents[document_id]
+            document_tokens = tokenize(" ".join([
+                document["title"],
+                document["description"],
+                document["content"]
+            ]))
+            matched_terms = []
+            for term in query_tokens:
+                if term in document_tokens and term not in matched_terms:
+                    matched_terms.append(term)
 
             results.append({
                 "title": document["title"],
                 "url": document["url"],
                 "description": document["description"],
-                "score": round(score, 6)
+                "snippet": generate_snippet(
+                    document["content"],
+                    query
+                ),
+                "score": round(score, 6),
+                "matched_terms": matched_terms
             })
 
         return results
