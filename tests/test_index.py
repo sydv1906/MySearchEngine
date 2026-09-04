@@ -37,3 +37,12 @@ def test_document_length():
     index.add_document(1, ["python", "web", "development"])
 
     assert index.get_document_length(1) == 3
+
+
+def test_average_document_length():
+    index = InvertedIndex()
+
+    index.add_document(1, ["python", "programming"])
+    index.add_document(2, ["python", "web", "development", "tutorial"])
+
+    assert index.get_average_document_length() == 3

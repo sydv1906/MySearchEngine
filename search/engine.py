@@ -1,12 +1,15 @@
 from search.index import InvertedIndex
-from search.ranking import tf_idf
+from search.ranking import bm25
 from search.tokenizer import tokenize
+
+
+TITLE_BOOST = 2.0
+DESCRIPTION_BOOST = 1.25
 
 
 class SearchEngine:
     """
-    Simple search engine using an inverted index
-    and TF-IDF-style scoring.
+    Simple search engine using an inverted index and BM25 scoring.
     """
 
     def __init__(self):
@@ -56,6 +59,9 @@ class SearchEngine:
         scores = {}
 
         total_documents = self.index.get_document_count()
+        average_document_length = (
+            self.index.get_average_document_length()
+        )
 
         for term in query_tokens:
 
@@ -72,12 +78,19 @@ class SearchEngine:
                     document_id
                 )
 
-                score = tf_idf(
-                    term_frequency,
-                    document_length,
-                    total_documents,
-                    document_frequency
+                score = bm25(
+                    term_frequency=term_frequency,
+                    document_frequency=document_frequency,
+                    document_length=document_length,
+                    average_document_length=average_document_length,
+                    document_count=total_documents
                 )
+
+                document = self.documents[document_id]
+                if term in tokenize(document["title"]):
+                    score *= TITLE_BOOST
+                elif term in tokenize(document["description"]):
+                    score *= DESCRIPTION_BOOST
 
                 scores[document_id] = (
                     scores.get(document_id, 0.0)

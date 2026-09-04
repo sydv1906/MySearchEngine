@@ -73,6 +73,16 @@ class InvertedIndex:
 
         return len(self.document_lengths)
 
+    def get_average_document_length(self) -> float:
+        """Return the average number of indexed tokens per document."""
+
+        if not self.document_lengths:
+            return 0.0
+
+        return sum(self.document_lengths.values()) / len(
+            self.document_lengths
+        )
+
     def __len__(self):
         """
         Return the number of indexed terms.

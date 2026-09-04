@@ -3,6 +3,41 @@ import math
 from search.tokenizer import tokenize
 
 
+def bm25(
+    term_frequency: int,
+    document_frequency: int,
+    document_length: int,
+    average_document_length: float,
+    document_count: int,
+    k1: float = 1.5,
+    b: float = 0.75
+) -> float:
+    """Calculate a BM25 relevance score for one term and document."""
+
+    if (
+        document_count == 0
+        or document_frequency == 0
+        or average_document_length == 0
+        or term_frequency == 0
+    ):
+        return 0.0
+
+    inverse_document_frequency = math.log(
+        1 + (
+            (document_count - document_frequency + 0.5)
+            / (document_frequency + 0.5)
+        )
+    )
+
+    numerator = term_frequency * (k1 + 1)
+    denominator = term_frequency + k1 * (
+        1 - b
+        + b * (document_length / average_document_length)
+    )
+
+    return inverse_document_frequency * (numerator / denominator)
+
+
 def tf(term_frequency: int, document_length: int) -> float:
     """Calculate normalized term frequency."""
 

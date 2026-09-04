@@ -38,3 +38,50 @@ def test_search_engine_respects_limit():
         )
 
     assert len(engine.search("python", limit=2)) == 2
+
+
+def test_bm25_search_ranking():
+    engine = SearchEngine()
+
+    engine.add_document(
+        1,
+        "Python Programming",
+        "https://example.com/python",
+        "Python programming",
+        "Python Python Python programming"
+    )
+    engine.add_document(
+        2,
+        "Java Programming",
+        "https://example.com/java",
+        "Programming language",
+        "Java programming language"
+    )
+
+    results = engine.search("python")
+
+    assert results
+    assert results[0]["url"] == "https://example.com/python"
+
+
+def test_title_match_receives_a_ranking_boost():
+    engine = SearchEngine()
+
+    engine.add_document(
+        1,
+        "Python Guide",
+        "https://example.com/title-match",
+        "A guide",
+        "Learn programming"
+    )
+    engine.add_document(
+        2,
+        "Programming Guide",
+        "https://example.com/content-match",
+        "A guide",
+        "Learn Python"
+    )
+
+    results = engine.search("python")
+
+    assert results[0]["url"] == "https://example.com/title-match"
