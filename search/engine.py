@@ -3,6 +3,7 @@ import math
 from search.index import InvertedIndex
 from search.ranking import bm25
 from search.query_processor import QueryProcessor
+from search.query_analyzer import QueryAnalyzer
 from search.snippets import generate_snippet
 from search.tokenizer import tokenize
 
@@ -20,6 +21,7 @@ class SearchEngine:
         self.index = InvertedIndex()
         self.documents = {}
         self.query_processor = QueryProcessor()
+        self.query_analyzer = QueryAnalyzer()
 
     def add_document(
         self,
@@ -76,7 +78,8 @@ class SearchEngine:
         if limit < 1:
             raise ValueError("limit must be at least 1")
 
-        query_tokens = self.query_processor.process(query)
+        query_analysis = self.query_analyzer.analyze(query)
+        query_tokens = query_analysis["tokens"]
 
         if not query_tokens:
             return {

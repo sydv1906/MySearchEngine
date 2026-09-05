@@ -132,15 +132,48 @@ def search(
         limit=limit
     )
     results = search_results["results"]
+    query_analysis = search_engine.query_analyzer.analyze(query)
 
     return {
         "query": query,
+        "query_type": query_analysis["query_type"],
+        "intent": query_analysis["intent"],
         "results_count": len(results),
         "total_results": search_results["total_results"],
         "page": search_results["page"],
         "limit": search_results["limit"],
         "total_pages": search_results["total_pages"],
         "results": results
+    }
+
+
+@app.get("/suggest")
+def suggest(query: str = ""):
+    normalized_query = query.strip().lower()
+
+    if not normalized_query:
+        return {
+            "query": "",
+            "suggestions": []
+        }
+
+    candidates = [
+        "python programming",
+        "python tutorial",
+        "python documentation",
+        "python web development",
+        "python machine learning",
+        "python programming language",
+    ]
+    suggestions = [
+        candidate
+        for candidate in candidates
+        if candidate.startswith(normalized_query)
+    ]
+
+    return {
+        "query": normalized_query,
+        "suggestions": suggestions[:5]
     }
 
 @app.post("/crawl")

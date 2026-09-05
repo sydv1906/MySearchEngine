@@ -83,6 +83,18 @@ The guided implementation is complete through **Day 12**.
 - Integrated query processing into BM25 search without changing ranking,
   snippets, highlighting, or pagination behavior.
 
+## Milestone 1 - Query, Suggestions, and Search API
+
+Completed accelerated Session 1:
+
+- Added `QueryAnalyzer` with keyword, question, informational, navigational,
+	and transactional query metadata.
+- Added `GET /suggest` with lightweight prefix suggestions.
+- Added `query_type` and `intent` metadata to `GET /search`.
+- Added React autocomplete suggestions with keyboard and click-to-search flows.
+- Preserved BM25 ranking, snippets, highlighting, pagination, and existing API
+	defaults.
+
 ## Search API
 
 Start the backend from the project root:

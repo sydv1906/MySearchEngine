@@ -44,11 +44,41 @@ function App() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const pageLimit = 10;
 
 
-  const search = async (requestedPage = 1) => {
-    const trimmedQuery = query.trim();
+  const fetchSuggestions = async (value: string) => {
+    const trimmedValue = value.trim();
+
+    if (!trimmedValue) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/suggest?query=${encodeURIComponent(trimmedValue)}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Suggestion request failed");
+      }
+
+      const data = await response.json();
+      setSuggestions(data.suggestions || []);
+    } catch (error) {
+      console.error("Suggestion error:", error);
+      setSuggestions([]);
+    }
+  };
+
+
+  const search = async (
+    searchQuery = query,
+    requestedPage = 1
+  ) => {
+    const trimmedQuery = searchQuery.trim();
 
     if (!trimmedQuery) {
       return;
@@ -58,6 +88,7 @@ function App() {
     setSearched(true);
     setError("");
     setPage(requestedPage);
+    setSuggestions([]);
 
     try {
       const params = new URLSearchParams({
@@ -92,13 +123,13 @@ function App() {
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
-      search();
+      search(query, 1);
     }
   };
 
 
   const goToPage = (nextPage: number) => {
-    search(nextPage);
+    search(query, nextPage);
   };
 
 
@@ -118,14 +149,18 @@ function App() {
           <input
             type="text"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => {
+              const value = event.target.value;
+              setQuery(value);
+              fetchSuggestions(value);
+            }}
             onKeyDown={handleKeyDown}
             placeholder="Search anything..."
             className="search-input"
           />
 
           <button
-            onClick={() => search(1)}
+            onClick={() => search(query, 1)}
             className="search-button"
             disabled={loading}
           >
@@ -133,6 +168,25 @@ function App() {
           </button>
 
         </div>
+
+        {suggestions.length > 0 && (
+          <div className="suggestions" role="listbox">
+            {suggestions.map((suggestion) => (
+              <button
+                type="button"
+                className="suggestion"
+                key={suggestion}
+                onClick={() => {
+                  setQuery(suggestion);
+                  setSuggestions([]);
+                  search(suggestion, 1);
+                }}
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        )}
 
 
         {error && (
