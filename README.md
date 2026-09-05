@@ -75,6 +75,14 @@ The guided implementation is complete through **Day 12**.
 - Added FastAPI validation for `page` and `limit`.
 - Added React Previous/Next controls and result totals.
 
+### Day 13 - Smart Query Processing
+
+- Added reusable text normalization for lowercase, punctuation, and whitespace.
+- Added configurable stopword removal to the tokenizer.
+- Added `QueryProcessor` for normalized query tokens and canonical query text.
+- Integrated query processing into BM25 search without changing ranking,
+  snippets, highlighting, or pagination behavior.
+
 ## Search API
 
 Start the backend from the project root:

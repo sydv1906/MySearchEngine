@@ -1,7 +1,7 @@
 import re
 
 
-STOP_WORDS = {
+STOPWORDS = {
     "a",
     "an",
     "and",
@@ -28,25 +28,49 @@ STOP_WORDS = {
     "were",
     "will",
     "with",
+    "these",
+    "those",
+    "or",
+    "but",
 }
 
 
-def tokenize(text: str) -> list[str]:
+STOP_WORDS = STOPWORDS
+
+
+def normalize_text(text: str) -> str:
+    """Normalize case, punctuation, and whitespace before tokenization."""
+
+    if not text:
+        return ""
+
+    text = text.lower()
+    text = re.sub(r"[^a-z0-9\s]", " ", text)
+    text = re.sub(r"\s+", " ", text)
+
+    return text.strip()
+
+
+def tokenize(
+    text: str,
+    remove_stopwords: bool = True
+) -> list[str]:
     """
     Convert text into normalized search tokens.
     """
 
+    text = normalize_text(text)
+
     if not text:
         return []
 
-    text = text.lower()
+    tokens = text.split()
 
-    tokens = re.findall(r"\b[a-z0-9]+\b", text)
-
-    tokens = [
-        token
-        for token in tokens
-        if token not in STOP_WORDS
-    ]
+    if remove_stopwords:
+        tokens = [
+            token
+            for token in tokens
+            if token not in STOPWORDS
+        ]
 
     return tokens
