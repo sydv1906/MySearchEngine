@@ -95,6 +95,20 @@ Completed accelerated Session 1:
 - Preserved BM25 ranking, snippets, highlighting, pagination, and existing API
 	defaults.
 
+## Milestone 2 - Real Crawling and Indexing Pipeline
+
+Completed accelerated Session 2:
+
+- Added normalized SHA-256 content hashing for duplicate-page detection.
+- Migrated and backfilled the existing SQLite `documents.content_hash` column.
+- Prevented duplicate documents by both URL and normalized content.
+- Preserved the crawler frontier, robots handling, retry behavior, domain
+	filtering, and page/URL limits.
+- Added crawl URL validation and limit validation at the FastAPI boundary.
+- Added document totals to `GET /crawl/stats`.
+- Ensured duplicate returned document IDs are not counted twice during crawl
+	indexing.
+
 ## Search API
 
 Start the backend from the project root:

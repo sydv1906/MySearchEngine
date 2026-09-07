@@ -1,8 +1,9 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from crawler.crawler import WebCrawler
+from crawler.url_utils import is_valid_url, normalize_url
 
 from backend.database import (
     initialize_database,
@@ -179,9 +180,17 @@ def suggest(query: str = ""):
 @app.post("/crawl")
 def crawl_website(
     url: str,
-    max_pages: int = 5,
-    max_urls: int = 100
+    max_pages: int = Query(5, ge=1),
+    max_urls: int = Query(100, ge=1)
 ):
+
+    if not is_valid_url(url):
+        raise HTTPException(
+            status_code=400,
+            detail="Only valid HTTP and HTTPS URLs can be crawled"
+        )
+
+    url = normalize_url(url)
 
     crawler = WebCrawler(
         max_pages=max_pages,
@@ -193,6 +202,7 @@ def crawl_website(
     pages = crawler.crawl(url)
 
     indexed = 0
+    indexed_document_ids = set()
 
     for page in pages:
 
@@ -203,6 +213,9 @@ def crawl_website(
             content=page["content"]
         )
 
+        if document_id in indexed_document_ids:
+            continue
+
         search_engine.add_document(
             document_id,
             page["title"] or page["url"],
@@ -211,6 +224,7 @@ def crawl_website(
             page["content"]
         )
 
+        indexed_document_ids.add(document_id)
         indexed += 1
 
     return {

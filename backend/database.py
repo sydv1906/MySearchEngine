@@ -1,6 +1,8 @@
 import sqlite3
 from pathlib import Path
 
+from crawler.content_utils import content_hash
+
 
 # Project root directory
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -43,6 +45,7 @@ def initialize_database():
         url TEXT UNIQUE NOT NULL,
         description TEXT NOT NULL DEFAULT '',
         content TEXT NOT NULL DEFAULT '',
+        content_hash TEXT,
         status TEXT NOT NULL DEFAULT 'pending',
         retry_count INTEGER NOT NULL DEFAULT 0,
         discovered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -58,7 +61,8 @@ def initialize_database():
     missing_document_columns = {
         "title": "TEXT NOT NULL DEFAULT ''",
         "description": "TEXT NOT NULL DEFAULT ''",
-        "content": "TEXT NOT NULL DEFAULT ''"
+        "content": "TEXT NOT NULL DEFAULT ''",
+        "content_hash": "TEXT"
     }
 
     for column, definition in missing_document_columns.items():
@@ -66,6 +70,19 @@ def initialize_database():
             cursor.execute(
                 f"ALTER TABLE documents ADD COLUMN {column} {definition}"
             )
+
+    cursor.execute(
+        """
+        SELECT id, content
+        FROM documents
+        WHERE content_hash IS NULL
+        """
+    )
+    for row in cursor.fetchall():
+        cursor.execute(
+            "UPDATE documents SET content_hash = ? WHERE id = ?",
+            (content_hash(row["content"]), row["id"])
+        )
 
     cursor.execute(
         """
@@ -247,6 +264,7 @@ def get_crawl_stats():
         stats[row["status"]] = row["count"]
 
     stats["total"] = sum(stats.values())
+    stats["documents"] = get_document_count()
 
     return stats
 
@@ -260,6 +278,7 @@ def add_document(
     connection = get_connection()
 
     cursor = connection.cursor()
+    document_hash = content_hash(content)
 
     cursor.execute(
         "SELECT id FROM documents WHERE url = ?",
@@ -274,16 +293,29 @@ def add_document(
         return existing["id"]
 
     cursor.execute(
+        "SELECT id FROM documents WHERE content_hash = ? LIMIT 1",
+        (document_hash,)
+    )
+
+    existing_content = cursor.fetchone()
+
+    if existing_content:
+        connection.close()
+
+        return existing_content["id"]
+
+    cursor.execute(
         """
         INSERT INTO documents
-        (title, url, description, content)
-        VALUES (?, ?, ?, ?)
+        (title, url, description, content, content_hash)
+        VALUES (?, ?, ?, ?, ?)
         """,
         (
             title,
             url,
             description,
-            content
+            content,
+            document_hash
         )
     )
 
