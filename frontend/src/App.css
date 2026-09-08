@@ -185,6 +185,30 @@ body {
 }
 
 
+.result-meta,
+.trust-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666666;
+}
+
+
+.result-meta span,
+.trust-reasons span {
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: #f5f5f5;
+}
+
+
+.trust-reasons {
+  color: #456b4b;
+}
+
+
 .pagination {
   display: flex;
   align-items: center;

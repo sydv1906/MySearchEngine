@@ -6,6 +6,7 @@ from search.query_processor import QueryProcessor
 from search.query_analyzer import QueryAnalyzer
 from search.snippets import generate_snippet
 from search.tokenizer import tokenize
+from search.trust_ranker import TrustRanker, trust_reasons
 
 
 TITLE_BOOST = 2.0
@@ -22,6 +23,7 @@ class SearchEngine:
         self.documents = {}
         self.query_processor = QueryProcessor()
         self.query_analyzer = QueryAnalyzer()
+        self.trust_ranker = TrustRanker()
 
     def add_document(
         self,
@@ -131,8 +133,19 @@ class SearchEngine:
                     + score
                 )
 
+        trust_data_by_document = {
+            document_id: self.trust_ranker.calculate(
+                self.documents[document_id]["url"]
+            )
+            for document_id in scores
+        }
+        final_scores = {
+            document_id: score * 0.85
+            + trust_data_by_document[document_id]["trust_score"] * 0.15
+            for document_id, score in scores.items()
+        }
         ranked_results = sorted(
-            scores.items(),
+            final_scores.items(),
             key=lambda item: item[1],
             reverse=True
         )
@@ -148,6 +161,7 @@ class SearchEngine:
         for document_id, score in ranked_results[start:end]:
 
             document = self.documents[document_id]
+            trust_data = trust_data_by_document[document_id]
             document_tokens = tokenize(" ".join([
                 document["title"],
                 document["description"],
@@ -167,7 +181,14 @@ class SearchEngine:
                     query
                 ),
                 "score": round(score, 6),
-                "matched_terms": matched_terms
+                "matched_terms": matched_terms,
+                "trust_score": trust_data["trust_score"],
+                "authority_score": trust_data["authority"],
+                "freshness_score": trust_data["freshness"],
+                "trust_reasons": trust_reasons(
+                    trust_data["authority"],
+                    trust_data["freshness"]
+                )
             })
 
         return {

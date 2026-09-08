@@ -93,3 +93,21 @@ def test_title_match_receives_a_ranking_boost():
     results = engine.search("python")
 
     assert results[0]["url"] == "https://example.com/title-match"
+
+
+def test_results_include_trust_signals():
+    engine = SearchEngine()
+    engine.add_document(
+        1,
+        "Python Guide",
+        "https://docs.python.org/guide",
+        "",
+        "Learn Python"
+    )
+
+    result = engine.search("python")[0]
+
+    assert result["trust_score"] > 0
+    assert result["authority_score"] == 1.0
+    assert result["freshness_score"] == 0.5
+    assert result["trust_reasons"]

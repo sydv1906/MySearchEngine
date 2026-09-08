@@ -8,6 +8,10 @@ type SearchResult = {
   snippet: string;
   score: number;
   matched_terms: string[];
+  trust_score: number;
+  authority_score: number;
+  freshness_score: number;
+  trust_reasons: string[];
 };
 
 function HighlightedText({
@@ -256,6 +260,24 @@ function App() {
                     terms={result.matched_terms}
                   />
                 </p>
+
+                <div className="result-meta">
+                  <span>
+                    Trust: {Math.round((result.trust_score || 0) * 100)}%
+                  </span>
+                  <span>
+                    Authority: {Math.round((result.authority_score || 0) * 100)}%
+                  </span>
+                  <span>
+                    Freshness: {Math.round((result.freshness_score || 0) * 100)}%
+                  </span>
+                </div>
+
+                <div className="trust-reasons">
+                  {result.trust_reasons?.map((reason) => (
+                    <span key={reason}>✓ {reason}</span>
+                  ))}
+                </div>
 
 
                 <div className="result-score">

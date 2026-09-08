@@ -109,6 +109,20 @@ Completed accelerated Session 2:
 - Ensured duplicate returned document IDs are not counted twice during crawl
 	indexing.
 
+## Milestone 3 - Trust-Aware Ranking
+
+Completed accelerated Session 3:
+
+- Added measurable authority scoring for known, educational, and government
+	domains.
+- Added freshness scoring with a neutral fallback when crawl timestamps are
+	unavailable.
+- Blended trust into BM25 ranking at 15% while keeping relevance dominant at
+	85%.
+- Exposed trust, authority, freshness, and explanation reasons in search
+	results.
+- Added trust signal badges and reason labels to the React result cards.
+
 ## Search API
 
 Start the backend from the project root:
