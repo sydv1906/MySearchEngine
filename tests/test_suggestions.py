@@ -1,4 +1,4 @@
-from backend.main import search, suggest
+from backend.main import health_check, search, suggest
 
 
 def test_suggestions():
@@ -26,3 +26,12 @@ def test_search_includes_query_metadata():
     assert response["query_type"] == "keyword"
     assert response["intent"] == "general"
     assert "total_results" in response
+    assert "search_time_ms" in response
+    assert response["search_time_ms"] >= 0
+
+
+def test_health_endpoint_identifies_service():
+    response = health_check()
+
+    assert response["status"] == "ok"
+    assert response["service"] == "MySearchEngine"

@@ -123,6 +123,18 @@ Completed accelerated Session 3:
 	results.
 - Added trust signal badges and reason labels to the React result cards.
 
+## Milestone 4 - Production-Quality Search UI and Performance
+
+Completed accelerated Session 4:
+
+- Added measured `search_time_ms` metadata to `GET /search`.
+- Added a deployment-friendly `/health` response with service identity.
+- Added robust loading, error, empty-result, result-count, and timing states.
+- Added cancellable autocomplete requests with a two-character minimum.
+- Preserved safe React text-node highlighting instead of rendering untrusted
+	HTML with `dangerouslySetInnerHTML`.
+- Improved result cards, trust metadata, pagination, and responsive styling.
+
 ## Search API
 
 Start the backend from the project root:

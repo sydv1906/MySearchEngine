@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import time
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -77,7 +78,8 @@ def home():
 @app.get("/health")
 def health_check():
     return {
-        "status": "healthy",
+        "status": "ok",
+        "service": "MySearchEngine",
         "database": "connected"
     }
 
@@ -127,6 +129,7 @@ def search(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=50)
 ):
+    start_time = time.perf_counter()
     search_results = search_engine.search_paginated(
         query,
         page=page,
@@ -134,6 +137,7 @@ def search(
     )
     results = search_results["results"]
     query_analysis = search_engine.query_analyzer.analyze(query)
+    search_time_ms = (time.perf_counter() - start_time) * 1000
 
     return {
         "query": query,
@@ -144,6 +148,7 @@ def search(
         "page": search_results["page"],
         "limit": search_results["limit"],
         "total_pages": search_results["total_pages"],
+        "search_time_ms": round(search_time_ms, 2),
         "results": results
     }
 

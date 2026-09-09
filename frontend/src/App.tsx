@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from "react";
+import { useEffect, useState, type KeyboardEvent } from "react";
 import "./App.css";
 
 type SearchResult = {
@@ -12,6 +12,13 @@ type SearchResult = {
   authority_score: number;
   freshness_score: number;
   trust_reasons: string[];
+};
+
+type SearchInfo = {
+  total_results: number;
+  total_pages: number;
+  page: number;
+  search_time_ms: number;
 };
 
 function HighlightedText({
@@ -49,33 +56,45 @@ function App() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [searchInfo, setSearchInfo] = useState<SearchInfo | null>(null);
   const pageLimit = 10;
 
 
-  const fetchSuggestions = async (value: string) => {
-    const trimmedValue = value.trim();
+  useEffect(() => {
+    const trimmedQuery = query.trim();
 
-    if (!trimmedValue) {
+    if (trimmedQuery.length < 2) {
       setSuggestions([]);
       return;
     }
 
-    try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/suggest?query=${encodeURIComponent(trimmedValue)}`
-      );
+    const controller = new AbortController();
 
-      if (!response.ok) {
-        throw new Error("Suggestion request failed");
+    const fetchSuggestions = async () => {
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:8000/suggest?query=${encodeURIComponent(trimmedQuery)}`,
+          { signal: controller.signal }
+        );
+
+        if (!response.ok) {
+          throw new Error("Suggestion request failed");
+        }
+
+        const data = await response.json();
+        setSuggestions(data.suggestions || []);
+      } catch (error) {
+        if ((error as Error).name !== "AbortError") {
+          console.error("Suggestion error:", error);
+          setSuggestions([]);
+        }
       }
+    };
 
-      const data = await response.json();
-      setSuggestions(data.suggestions || []);
-    } catch (error) {
-      console.error("Suggestion error:", error);
-      setSuggestions([]);
-    }
-  };
+    fetchSuggestions();
+
+    return () => controller.abort();
+  }, [query]);
 
 
   const search = async (
@@ -93,6 +112,7 @@ function App() {
     setError("");
     setPage(requestedPage);
     setSuggestions([]);
+    setSearchInfo(null);
 
     try {
       const params = new URLSearchParams({
@@ -111,14 +131,16 @@ function App() {
       const data = await response.json();
 
       setResults(data.results || []);
-  setTotalPages(data.total_pages || 1);
-  setTotalResults(data.total_results || 0);
+        setTotalPages(data.total_pages || 1);
+        setTotalResults(data.total_results || 0);
+        setSearchInfo(data);
     } catch (err) {
       console.error(err);
       setError("Unable to connect to the search server.");
       setResults([]);
       setTotalPages(1);
       setTotalResults(0);
+      setSearchInfo(null);
     } finally {
       setLoading(false);
     }
@@ -156,7 +178,6 @@ function App() {
             onChange={(event) => {
               const value = event.target.value;
               setQuery(value);
-              fetchSuggestions(value);
             }}
             onKeyDown={handleKeyDown}
             placeholder="Search anything..."
@@ -189,6 +210,15 @@ function App() {
                 {suggestion}
               </button>
             ))}
+          </div>
+        )}
+
+        {searchInfo && !loading && (
+          <div className="search-info">
+            About {searchInfo.total_results || 0} result
+            {searchInfo.total_results !== 1 ? "s" : ""}
+            {" · "}
+            {searchInfo.search_time_ms || 0} ms
           </div>
         )}
 
@@ -228,7 +258,7 @@ function App() {
             {results.map((result, index) => (
 
               <article
-                className="result"
+                className="result-card"
                 key={`${result.url}-${index}`}
               >
 
@@ -288,7 +318,7 @@ function App() {
 
             ))}
 
-            {totalPages > 1 && (
+            {totalPages > 1 && !loading && (
               <div className="pagination" aria-label="Search results pages">
                 <button
                   type="button"

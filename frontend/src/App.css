@@ -131,8 +131,11 @@ body {
 }
 
 
-.result {
-  margin-bottom: 32px;
+.result-card {
+  max-width: 700px;
+  margin: 0 auto 24px;
+  padding: 18px 0;
+  border-bottom: 1px solid #e5e5e5;
 }
 
 
@@ -154,6 +157,7 @@ body {
   color: #188038;
   font-size: 14px;
   margin-bottom: 7px;
+  word-break: break-all;
 }
 
 
@@ -240,32 +244,50 @@ body {
 
 
 .loading {
-  margin-top: 40px;
+  margin: 24px auto;
   text-align: center;
   color: #666666;
 }
 
 
-.error {
-  margin-top: 30px;
+.search-info {
+  max-width: 700px;
+  margin: 10px auto 20px;
+  font-size: 13px;
+  color: #777777;
+}
+
+
+.error,
+.error-message {
+  max-width: 700px;
+  margin: 20px auto;
   padding: 15px;
-  border: 1px solid #dddddd;
+  border: 1px solid #f0cccc;
+  border-radius: 6px;
+  background: #fff4f4;
+  color: #7d2424;
+  text-align: center;
+}
+
+
+.empty-state,
+.no-results {
+  max-width: 700px;
+  margin: 60px auto;
   border-radius: 8px;
   text-align: center;
 }
 
 
-.no-results {
-  margin-top: 60px;
-  text-align: center;
-}
-
-
+.empty-state h2,
+.empty-state h3,
 .no-results h2 {
   margin-bottom: 8px;
 }
 
 
+.empty-state p,
 .no-results p {
   color: #666666;
 }
