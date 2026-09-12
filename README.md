@@ -135,6 +135,18 @@ Completed accelerated Session 4:
 	HTML with `dangerouslySetInnerHTML`.
 - Improved result cards, trust metadata, pagination, and responsive styling.
 
+## Generic Keyword Coverage
+
+Search result formatting is keyword-independent. Any term found in an indexed
+document is ranked with BM25 plus trust signals and receives the same title,
+URL, description, snippet, score, matched-term, trust, and explanation fields.
+Autocomplete suggestions are derived from the currently indexed document titles
+and terms rather than being limited to Python examples.
+
+The crawler must have discovered or the API must have received documents for a
+keyword before that keyword can return results. A search engine cannot return
+real results for topics that are not present in its document store.
+
 ## Search API
 
 Start the backend from the project root:

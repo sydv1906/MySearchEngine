@@ -163,23 +163,9 @@ def suggest(query: str = ""):
             "suggestions": []
         }
 
-    candidates = [
-        "python programming",
-        "python tutorial",
-        "python documentation",
-        "python web development",
-        "python machine learning",
-        "python programming language",
-    ]
-    suggestions = [
-        candidate
-        for candidate in candidates
-        if candidate.startswith(normalized_query)
-    ]
-
     return {
         "query": normalized_query,
-        "suggestions": suggestions[:5]
+        "suggestions": search_engine.suggestions(normalized_query)
     }
 
 @app.post("/crawl")

@@ -198,3 +198,26 @@ class SearchEngine:
             "limit": limit,
             "total_pages": total_pages
         }
+
+    def suggestions(self, query: str, limit: int = 5) -> list[str]:
+        """Return prefix suggestions derived from currently indexed documents."""
+
+        normalized_query = query.strip().lower()
+        if not normalized_query:
+            return []
+
+        candidates = []
+        seen = set()
+
+        for document in self.documents.values():
+            title = " ".join(document["title"].split()).lower()
+            if title.startswith(normalized_query) and title not in seen:
+                candidates.append(title)
+                seen.add(title)
+
+        for term in self.index.index:
+            if term.startswith(normalized_query) and term not in seen:
+                candidates.append(term)
+                seen.add(term)
+
+        return candidates[:limit]

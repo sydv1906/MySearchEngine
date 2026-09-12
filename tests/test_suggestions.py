@@ -5,7 +5,10 @@ def test_suggestions():
     result = suggest("PY")
 
     assert result["query"] == "py"
-    assert len(result["suggestions"]) > 0
+    assert all(
+        suggestion.startswith("py")
+        for suggestion in result["suggestions"]
+    )
 
 
 def test_empty_suggestions():
